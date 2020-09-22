@@ -19,6 +19,8 @@ import matplotlib.pyplot as plt
 import pickle
 import random
 import json
+from collections import defaultdict 
+from typing import List, Dict, Any 
 
 class Nuscenes_Baseline_Experiment():
     def __init__(self, 
@@ -261,7 +263,7 @@ class Nuscenes_Baseline_Experiment():
         print("saving predictions")
         json.dump(mtp_output, open(prediction_output_path, "w"))
 
-    def compute_metrics(config_file = 'predict_2020_icra.json', result_file = 'metrics.json', agent_frame = True):
+    def compute_metrics(self,config_file = 'predict_2020_icra.json', result_file = 'metrics.json', agent_frame = True):
 
         config = load_prediction_config(self.helper, config_file)
         predictions = json.load(open(os.path.join(self.output_dir,'mtp_preds.json'), "r"))
