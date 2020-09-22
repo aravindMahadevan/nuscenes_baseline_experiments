@@ -4,6 +4,7 @@ from nuscenes.prediction.models.backbone import ResNetBackbone, MobileNetBackbon
 from nuscenes.prediction.models.mtp import MTP, MTPLoss
 from nuscenes.prediction.models.covernet import CoverNet, ConstantLatticeLoss
 from nuscenes.eval.prediction.data_classes import Prediction
+from nuscenes.eval.prediction.config import PredictionConfig, load_prediction_config
 
 
 import torch
@@ -191,7 +192,7 @@ class Nuscenes_Baseline_Experiment():
             print('saving weights')
             self.save()
             self.scheduler.step()
-            
+
         print("saving final weights")
         self.save()
         print("Done training!")
@@ -260,9 +261,10 @@ class Nuscenes_Baseline_Experiment():
         print("saving predictions")
         json.dump(mtp_output, open(prediction_output_path, "w"))
 
-    def compute_metrics(config = 'predict_2020_icra.json', result_file = 'metrics.json', agent_frame = True):
+    def compute_metrics(config_file = 'predict_2020_icra.json', result_file = 'metrics.json', agent_frame = True):
 
-        predictions = json.load(open(os.path.join(self.output_dir,mtp_preds.json), "r"))
+        config = load_prediction_config(self.helper, config_file)
+        predictions = json.load(open(os.path.join(self.output_dir,'mtp_preds.json'), "r"))
         n_preds = len(predictions)
         result_output_path = os.path.join(self.output_dir,result_file)
         containers = {metric.name: np.zeros((n_preds, metric.shape)) for metric in config.metrics}
@@ -283,7 +285,7 @@ class Nuscenes_Baseline_Experiment():
 if __name__ == "__main__":
     exp = Nuscenes_Baseline_Experiment(output_dir = 'exp15', model = 'MTP')
     # exp.run()
-    exp.generate_predictions_from_validation()
+#    exp.generate_predictions_from_validation()
     exp.compute_metrics()
 
 
