@@ -191,11 +191,8 @@ class Nuscenes_Baseline_Experiment():
             print('saving weights')
             self.save()
             self.scheduler.step()
-
-#        self.val_epochs.append(epoch)
-#        print("computing final validation loss")
-#        self.compute_validation_loss(epoch)
-#        print('saving final weights')
+            
+        print("saving final weights")
         self.save()
         print("Done training!")
 
@@ -262,11 +259,31 @@ class Nuscenes_Baseline_Experiment():
                     
         print("saving predictions")
         json.dump(mtp_output, open(prediction_output_path, "w"))
-            
+
+    def compute_metrics(config = 'predict_2020_icra.json', result_file = 'metrics.json', agent_frame = True):
+
+        predictions = json.load(open(os.path.join(self.output_dir,mtp_preds.json), "r"))
+        n_preds = len(predictions)
+        result_output_path = os.path.join(self.output_dir,result_file)
+        containers = {metric.name: np.zeros((n_preds, metric.shape)) for metric in config.metrics}
+        for i, prediction_str in enumerate(predictions):
+            prediction = Prediction.deserialize(prediction_str)
+            ground_truth = exp.helper.get_future_for_agent(prediction.instance, prediction.sample,
+                                                    config.seconds, in_agent_frame=agent_frame)
+            for metric in config.metrics:
+                containers[metric.name][i] = metric(ground_truth, prediction)
+        aggregations: Dict[str, Dict[str, List[float]]] = defaultdict(dict)
+        for metric in config.metrics:
+            for agg in metric.aggregators:
+                aggregations[metric.name][agg.name] = agg(containers[metric.name])
+
+        print(aggregations)     
+        json.dump(aggregations, open(result_output_path, "w"), indent=2)                 
             
 if __name__ == "__main__":
     exp = Nuscenes_Baseline_Experiment(output_dir = 'exp15', model = 'MTP')
-    exp.run()
+    # exp.run()
     exp.generate_predictions_from_validation()
+    exp.compute_metrics()
 
 
