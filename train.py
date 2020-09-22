@@ -23,13 +23,14 @@ class Nuscenes_Baseline_Experiment():
     def __init__(self, 
                  output_dir,
                  data_version = 'v1.0-trainval',
-                 M = 16, 
-                 num_epochs = 100, 
+                 M = 3, 
+                 num_epochs = 150, 
                  num_workers = 4,
                  num_training_examples = None,
                  num_validation_examples = None, 
                  model = 'MTP',
-                 lr = 1e-4,
+                 lr = 1e-4, 
+                 decay_factor = 0.9,
                  batch_size=16, 
                  training_maps = 'maps_train',
                  validation_maps = 'maps_val',
@@ -44,6 +45,7 @@ class Nuscenes_Baseline_Experiment():
         self.output_dir = output_dir
         self.checkpoint_path = os.path.join(self.output_dir, "checkpoint.pth.tar")
         self.config_path = os.path.join(self.output_dir, "config.txt")
+      
                 
         self.num_epochs = num_epochs
         self.batch_size = batch_size 
@@ -65,9 +67,7 @@ class Nuscenes_Baseline_Experiment():
             trajectories = torch.Tensor(trajectories)
             self.criterion = ConstantLatticeLoss(trajectories).to(self.device)
         else:
-            raise ValueError("Invalid model specification")
-            
-           
+            raise ValueError("Invalid model specification")           
         
         #init data set and data loader 
         self.nusc = NuScenes(version=data_version, dataroot=data_root, verbose=True)
@@ -85,6 +85,7 @@ class Nuscenes_Baseline_Experiment():
         
         print(len(self.validation_set)) 
         print(len(self.training_set))
+        
         self.train_loader = DataLoader(self.training_set, 
                                        batch_size=self.batch_size, 
                                        shuffle = True,
@@ -98,7 +99,9 @@ class Nuscenes_Baseline_Experiment():
                                      pin_memory = True,
                                      num_workers = num_workers)        
         
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)    
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)  
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=10, gamma=decay_factor)
+
         
         self.train_loss = []
         self.val_loss = []
@@ -137,7 +140,8 @@ class Nuscenes_Baseline_Experiment():
                 'Optimizer' : self.optimizer.state_dict(),
                 'TrainLoss' : self.train_loss, 
                 'ValLoss': self.val_loss, 
-                'ValEpochs': self.val_epochs}
+                'ValEpochs': self.val_epochs, 
+                'Scheduler': self.scheduler}
         
     def save_fig(self):
         fig, ax = plt.subplots(1)
@@ -162,6 +166,7 @@ class Nuscenes_Baseline_Experiment():
         self.train_loss = checkpoint['TrainLoss']
         self.val_loss = checkpoint['ValLoss']
         self.val_epochs = checkpoint['ValEpochs']
+        self.scheduler = checkpoint['Scheduler']
         
         for state in self.optimizer.state.values():
             for k, v in state.items():
@@ -180,12 +185,12 @@ class Nuscenes_Baseline_Experiment():
         for epoch in range(starting_epoch, self.num_epochs): 
             self.train(epoch)
             
-#             if epoch % 10 == 0: 
             self.val_epochs.append(epoch)
             print('calculating validation loss')
             self.compute_validation_loss(epoch)
             print('saving weights')
             self.save()
+            self.scheduler.step()
 
 #        self.val_epochs.append(epoch)
 #        print("computing final validation loss")
@@ -238,6 +243,7 @@ class Nuscenes_Baseline_Experiment():
                                      num_workers = 0)  
         
         print('starting validation predictions')
+        prediction_output_path = os.path.join(self.output_dir,json_file_name)
         with torch.no_grad():
             count = 0
             for image_tensor, agent_state_vec, ground_truth, token  in val_loader:
@@ -254,13 +260,13 @@ class Nuscenes_Baseline_Experiment():
                 print("{0}/{1} predictions saved".format(count, len(val_loader)))
                 count+=1
                     
-                             
         print("saving predictions")
-        json.dump(mtp_output, open(json_file_name, "w"))
+        json.dump(mtp_output, open(prediction_output_path, "w"))
             
             
 if __name__ == "__main__":
-    exp = Nuscenes_Baseline_Experiment(output_dir = 'exp13', model = 'MTP')
+    exp = Nuscenes_Baseline_Experiment(output_dir = 'exp15', model = 'MTP')
     exp.run()
     exp.generate_predictions_from_validation()
+
 
