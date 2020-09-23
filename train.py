@@ -31,14 +31,14 @@ class Nuscenes_Baseline_Experiment():
                  num_workers = 4,
                  num_training_examples = None,
                  num_validation_examples = None, 
-                 model = 'MTP',
+                 model = 'CoverNet',
                  lr = 1e-4, 
                  decay_factor = 0.9,
                  batch_size=16, 
                  training_maps = 'maps_train',
                  validation_maps = 'maps_val',
                  data_root = '../full_data/sets/nuscenes',
-                 trajectory_set_path = None, 
+                 trajectory_set_path = 'nuscenes-prediction-challenge-trajectory-sets/epsilon_8.pkl', 
                  backbone_architecture='mobilenet_v2'):
         
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
