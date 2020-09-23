@@ -221,6 +221,7 @@ class Nuscenes_Baseline_Experiment():
         print("Starting Epoch {0} at {1}".format(epoch, str(time.strftime("%H:%M:%S", time.localtime()))))
         for image_tensor, agent_vec, ground_truth, _ in self.train_loader:
             output = self.model(image_tensor.to(self.device), agent_vec.to(self.device))
+            import pdb; pdb.set_trace()
             loss = self.criterion(output, ground_truth.to(self.device))
             self.optimizer.zero_grad()
             loss.backward()
