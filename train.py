@@ -31,7 +31,7 @@ class Nuscenes_Baseline_Experiment():
                  num_workers = 4,
                  num_training_examples = None,
                  num_validation_examples = None, 
-                 model = 'CoverNet',
+                 model = 'MTP',
                  lr = 1e-4, 
                  decay_factor = 0.9,
                  batch_size=16, 
@@ -285,9 +285,9 @@ class Nuscenes_Baseline_Experiment():
         json.dump(aggregations, open(result_output_path, "w"), indent=2)                 
             
 if __name__ == "__main__":
-    exp = Nuscenes_Baseline_Experiment(output_dir = 'exp15', model = 'MTP')
-    # exp.run()
-#    exp.generate_predictions_from_validation()
+    exp = Nuscenes_Baseline_Experiment(output_dir = 'exp16', model = 'CoverNet')
+    exp.run()
+    exp.generate_predictions_from_validation()
     exp.compute_metrics()
 
 
