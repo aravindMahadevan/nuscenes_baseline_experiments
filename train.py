@@ -186,8 +186,8 @@ class Nuscenes_Baseline_Experiment():
         starting_epoch = len(self.train_loss)
         print("Starting/Continuing Training at epoch {0}!".format(starting_epoch))
         for epoch in range(starting_epoch, self.num_epochs): 
-            self.train(epoch)
             
+            self.train(epoch)
             self.val_epochs.append(epoch)
             print('calculating validation loss')
             self.compute_validation_loss(epoch)
@@ -202,6 +202,7 @@ class Nuscenes_Baseline_Experiment():
     def compute_validation_loss(self, epoch): 
         epoch_loss = 0
         count=0
+        self.model.eval()
         with torch.no_grad():
             for image_tensor, agent_vec, ground_truth, _ in self.val_loader:
                 output = self.model(image_tensor.to(self.device), agent_vec.to(self.device))
@@ -218,10 +219,10 @@ class Nuscenes_Baseline_Experiment():
     def train(self, epoch): 
         epoch_loss = 0
         count=0
+        self.model.train()
         print("Starting Epoch {0} at {1}".format(epoch, str(time.strftime("%H:%M:%S", time.localtime()))))
         for image_tensor, agent_vec, ground_truth, _ in self.train_loader:
             output = self.model(image_tensor.to(self.device), agent_vec.to(self.device))
-            import pdb; pdb.set_trace()
             loss = self.criterion(output, ground_truth.to(self.device))
             self.optimizer.zero_grad()
             loss.backward()
@@ -244,6 +245,7 @@ class Nuscenes_Baseline_Experiment():
                                      num_workers = 0)  
         
         print('starting validation predictions')
+        self.model.eval()
         prediction_output_path = os.path.join(self.output_dir,json_file_name)
         with torch.no_grad():
             count = 0
