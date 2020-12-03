@@ -68,7 +68,7 @@ class Nuscenes_Baseline_Experiment():
                 raise ValueError("Invalid trajectory set path for CoverNet. Check path.")
             trajectories =pickle.load(open(trajectory_set_path, 'rb'))
             trajectories = torch.Tensor(trajectories)
-            self.criterion = ConstantLatticeLoss(trajectories).to(self.device)
+            self.criterion = ConstantLatticeLoss(trajectories)
         else:
             raise ValueError("Invalid model specification")           
         

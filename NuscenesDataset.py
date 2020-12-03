@@ -5,12 +5,10 @@ from torch.utils.data import Dataset, DataLoader
 
 from nuscenes import NuScenes
 
-from nuscenes.eval.prediction.splits import get_prediction_challenge_split
 from nuscenes.eval.prediction.config import load_prediction_config
 from nuscenes.eval.prediction.splits import get_prediction_challenge_split
 from nuscenes.prediction import PredictHelper
 
-from nuscenes.prediction.models.physics import ConstantVelocityHeading, PhysicsOracle
 from nuscenes.prediction.input_representation.static_layers import StaticLayerRasterizer
 from nuscenes.prediction.input_representation.agents import AgentBoxesWithFadedHistory
 from nuscenes.prediction.input_representation.interface import InputRepresentation
