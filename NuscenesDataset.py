@@ -56,8 +56,6 @@ class NuscenesDataset(Dataset):
         self.in_agent_frame = in_agent_frame
 
         self.config = load_prediction_config(self.helper, config_name)
-
-        self.valid_data_points = []
         
         self.save_maps_dataset = save_maps_dataset
         
@@ -71,9 +69,9 @@ class NuscenesDataset(Dataset):
         '''
         Input: None 
         Output: None
+
+        saves all the maps to the maps_dir directory specified in constructor
         
-        This method finds all the valid data points in the data set. We define a valid data point 
-        where the velocity, acceleartion, and heading specified by token not NaN. 
         '''
         print("starting to save maps")
         for i, token in enumerate(self.data_set): 
