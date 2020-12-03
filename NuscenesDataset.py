@@ -109,7 +109,7 @@ class NuscenesDataset(Dataset):
         #construct agent state vector 
         agent_state_vec = torch.Tensor([velocity, acceleration, heading])
         
-        #change image from (3, N, N), will have data loader take care 
+        #change image from (N,N,3) -> (3, N, N), will have data loader take care of unsqueezing outputs (Batch Size, 3, N, N)
         #get image and construct tensor 
         file_path = os.path.join(self.maps_dir, "maps_{0}.jpg".format(index))
         
